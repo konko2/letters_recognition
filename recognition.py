@@ -4,11 +4,13 @@ from tools import BLACK, get_neighbours, get_pixels_with_color
 
 class Instance:
     def __init__(self, pixels):
-        min_x = min(x for x, y in pixels)
-        min_y = min(y for x, y in pixels)
+        x_vals, y_vals = [set(vals) for vals in zip(*pixels)]
+        min_x, max_x = min(x_vals), max(x_vals)
+        min_y, max_y = min(y_vals), max(y_vals)
 
         self.start_pix = min_x, min_y
         self.pixels = [(x - min_x, y - min_y) for x, y in pixels]
+        self.size = (max_x - min_x, max_y - min_y)
 
     def classify(self):
         """
