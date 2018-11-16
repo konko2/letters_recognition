@@ -1,8 +1,5 @@
 from PIL import Image
-
-
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
+from tools import BLACK, get_neighbours, get_pixels_with_color
 
 
 class Instance:
@@ -23,20 +20,6 @@ class Instance:
         pass
 
 
-def get_neighbours(pixel):
-    """
-    Find neighbour pixels of 'pixel'
-    :param pixel: (x, y) - tuple of pixel coordinates 
-    :return: set of neighbours 
-    """
-    x_locality = (pixel[0] - 1, pixel[0], pixel[0] + 1)
-    y_locality = (pixel[1] - 1, pixel[1], pixel[1] + 1)
-
-    neighbours = [(x, y) for x in x_locality for y in y_locality]
-    neighbours.remove(pixel)
-    return neighbours
-
-
 def handle_image(img):
     """
     Make basic filtration: removing noise from image, turning colors into black and white.
@@ -52,12 +35,7 @@ def find_instances(img):
     :param img: PIL.Image.Image object
     :return: list of Instance objects
     """
-    img_data = img.load()
-    size = img.size
-    black_pixels = {
-        (x, y) for x in range(size[0]) for y in range(size[1]) if img_data[x, y] == BLACK
-    }
-
+    black_pixels = set(get_pixels_with_color(img, BLACK))
     instances = list()
 
     while black_pixels:
