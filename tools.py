@@ -22,22 +22,35 @@ def get_neighbours(pixel):
     return neighbours
 
 
-def get_locality(pixel, distance):
+def get_locality(pixel, area_size):
     """
-    Finding locality of pixel by given distance
+    Finding locality of pixel by given area size.
+    If area_size is integer, returns round according to metric r = x + y.
+    If area_size is tuple, returns rectangle locality
+    with length = 2*area_size[0] and high = 2*area_size[1].
     :param pixel: tuple of pixel coordinates
-    :param distance: integer length 
+    :param area_size: integer or tuple value depending on which type of locality is needed
     :return: list of pixels that belongs to this locality
     """
     locality = set()
-    for x_offset in range(distance + 1):
-        for y_offset in range(distance + 1 - x_offset):
-            locality.update([
-                (pixel[0] + x_offset, pixel[1] + y_offset),
-                (pixel[0] - x_offset, pixel[1] + y_offset),
-                (pixel[0] + x_offset, pixel[1] - y_offset),
-                (pixel[0] - x_offset, pixel[1] - y_offset)
-            ])
+
+    try:
+        area_size = tuple(iter(area_size))
+        offsets = [
+            (x, y) for x in range(area_size[0] + 1) for y in range(area_size[1] + 1)
+        ]
+    except TypeError:
+        offsets = [
+            (x, y) for x in range(area_size + 1) for y in range(area_size + 1 - x)
+        ]
+
+    for x_offset, y_offset in offsets:
+        locality.update([
+            (pixel[0] + x_offset, pixel[1] + y_offset),
+            (pixel[0] - x_offset, pixel[1] + y_offset),
+            (pixel[0] + x_offset, pixel[1] - y_offset),
+            (pixel[0] - x_offset, pixel[1] - y_offset)
+        ])
     return [p for p in locality if p[0] >= 0 and p[1] >= 0]
 
 
@@ -70,6 +83,21 @@ def get_ellipse_pixels(x_min, y_min, x_max, y_max):
         (x_min, y_min, x_max, y_max),
         fill=WHITE,
         outline=BLACK
+    )
+    return get_pixels_with_color(_img, BLACK)
+
+
+def get_A_slopping_lines_pixels(x_max, y_max):
+    _img = Image.new('RGB', (x_max, y_max), WHITE)
+    _draw = ImageDraw.Draw(_img)
+
+    _draw.line(
+        (0, y_max, 0.5*x_max, 0),
+        fill=BLACK
+    )
+    _draw.line(
+        (x_max, y_max, 0.5 * x_max, 0),
+        fill=BLACK
     )
 
     return get_pixels_with_color(_img, BLACK)
