@@ -1,10 +1,99 @@
 from PIL import ImageDraw
-from tools import get_ellipse_pixels, get_locality, WHITE, BLACK, RED, GREEN
+from tools import get_ellipse_pixels, get_A_slopping_lines_pixels, get_locality, WHITE, BLACK, RED, GREEN
+
+
+def has_A_slopping_lines(instance, *, _show_area=False):
+    """
+    True if instance image has A slopping lines
+    :param instance: recognition.Instance object
+    :param _show_area: if True shows area of feature for instance
+    :return: True or False
+    """
+    size = instance.size
+    lines = get_A_slopping_lines_pixels(size[0], size[1])
+    instance_pixels = set(instance.pixels)
+
+    eps = min(size) // 5
+
+    verifying_pixels = {p for p in lines if p[1] <= 5/6*size[1]}
+
+    if _show_area:
+        _show_feature_area(instance, verifying_pixels, eps)
+
+    for pixel in verifying_pixels:
+        if instance_pixels.isdisjoint(get_locality(pixel, eps)):
+            return False
+    return True
+
+
+def _has_quarter_horizont_line(instance, quarter, *, _show_area=False):
+    """
+    True if instance image has a corresponding quarter of middle horizontal line,
+    where parameter quarter is a sequential number of quarter.
+    :param instance: recognition.Instance object
+    :param quarter: integer 1, 2, 3 or 4
+    :param _show_area: if True shows area of feature for instance
+    :return: True or False
+    """
+    size = instance.size
+    x, y = int(0.25*size[0]), int(0.5*size[1])
+    verifying_pixels = {(x*(quarter - 1) + i, y) for i in range(x + 1)}
+    instance_pixels = set(instance.pixels)
+
+    eps = (size[0] // 15, size[1] // 7)
+
+    if _show_area:
+        _show_feature_area(instance, verifying_pixels, eps)
+
+    for pixel in verifying_pixels:
+        if instance_pixels.isdisjoint(get_locality(pixel, eps)):
+            return False
+    return True
+
+
+def has_1_quarter_horizont_line(instance, *, _show_area=False):
+    """
+    True if instance image has a first quarter of middle horizontal line.
+    :param instance: recognition.Instance object
+    :param _show_area: if True shows area of feature for instance
+    :return: True or False
+    """
+    return _has_quarter_horizont_line(instance, 1, _show_area=_show_area)
+
+
+def has_2_quarter_horizont_line(instance, *, _show_area=False):
+    """
+    True if instance image has a second quarter of middle horizontal line.
+    :param instance: recognition.Instance object
+    :param _show_area: if True shows area of feature for instance
+    :return: True or False
+    """
+    return _has_quarter_horizont_line(instance, 2, _show_area=_show_area)
+
+
+def has_3_quarter_horizont_line(instance, *, _show_area=False):
+    """
+    True if instance image has a third quarter of middle horizontal line.
+    :param instance: recognition.Instance object
+    :param _show_area: if True shows area of feature for instance
+    :return: True or False
+    """
+    return _has_quarter_horizont_line(instance, 3, _show_area=_show_area)
+
+
+def has_4_quarter_horizont_line(instance, *, _show_area=False):
+    """
+    True if instance image has a fourth quarter of middle horizontal line.
+    :param instance: recognition.Instance object
+    :param _show_area: if True shows area of feature for instance
+    :return: True or False
+    """
+    return _has_quarter_horizont_line(instance, 4, _show_area=_show_area)
 
 
 def has_C_circle(instance, *, _show_area=False):
     """
-    True if instance image have C circularity
+    True if instance image has C circularity
     :param instance: recognition.Instance object
     :param _show_area: if True shows area of feature for instance 
     :return: True or False
@@ -27,7 +116,7 @@ def has_C_circle(instance, *, _show_area=False):
 
 def has_B_circles(instance, *, _show_area=False):
     """
-    True if instance image have B circularities
+    True if instance image has B circularities
     :param instance: recognition.Instance object
     :param _show_area: if True shows area of feature for instance 
     :return: True or False
@@ -70,7 +159,7 @@ def has_B_circles(instance, *, _show_area=False):
 
 def has_D_belly(instance, *, _show_area=False):
     """
-    True if instance image have D belly
+    True if instance image has D belly
     :param instance: recognition.Instance object
     :param _show_area: if True shows area of feature for instance 
     :return: True or False
@@ -93,10 +182,10 @@ def has_D_belly(instance, *, _show_area=False):
 
 def _show_feature_area(instance, verifying_pixels, eps):
     """
-    Shows feature area. Red pixels is verifying pixels. 
-    Black pixels is locality of verifying pixels, 
+    Shows feature area. Red pixels are verifying pixels.
+    Black pixels are locality of verifying pixels,
     used for checking feature.
-    Green pixels is instance.
+    Green pixels are instance.
     :param instance: recognition.Instance object
     :param verifying_pixels: list of verifying pixels
     :param eps: length of verifying pixels locality
