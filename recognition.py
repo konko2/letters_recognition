@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image, ImageDraw
 from tools import BLACK, get_neighbours, get_pixels_with_color
 
 
@@ -28,8 +28,108 @@ def handle_image(img):
     :param img: PIL.Image.Image object
     :return: PIL.Image.Image object
     """
-    pass
 
+    def otsuThreshold(pixels, size):
+        intensity_lager_number = 256
+        histogram = [0 for i in range(intensity_lager_number)]
+        for i in range(size[0]):
+            for j in range(size[1]):
+                Y = round(0.299 * pixels[i, j][0] + 0.587 * pixels[i, j][1] + 0.114 * pixels[i, j][2])
+                histogram[Y] += 1
+        all_intensity_sum = 0
+        for i in range(size[0]):
+            for j in range(size[1]):
+                Y = round(0.299 * pixels[i, j][0] + 0.587 * pixels[i, j][1] + 0.114 * pixels[i, j][2])
+                all_intensity_sum += Y
+
+        all_pixel_count = size[0] * size[1]
+        first_class_pixel_count = 0
+        first_class_intensity_sum = 0
+
+        best_thresh = 0
+        best_sigma = 0.0
+
+        max_thresh = 0
+        min_thresh = 255
+        for i in range(size[0]):
+            for j in range(size[1]):
+                Y = round(0.299 * pixels[i, j][0] + 0.587 * pixels[i, j][1] + 0.114 * pixels[i, j][2])
+                if min_thresh > Y:
+                    min_thresh = Y
+                if max_thresh < Y:
+                    max_thresh = Y
+
+        for thresh in range(min_thresh, max_thresh + 1):
+            first_class_pixel_count += histogram[thresh]
+            first_class_intensity_sum += thresh * histogram[thresh]
+
+            first_class_prob = first_class_pixel_count / all_pixel_count
+            second_class_prob = 1.0 - first_class_prob
+
+            first_class_mean = first_class_intensity_sum / first_class_pixel_count
+            if all_pixel_count - first_class_pixel_count == 0:
+                break
+            second_class_mean = (all_intensity_sum - first_class_intensity_sum) / (
+                        all_pixel_count - first_class_pixel_count)
+
+            mean_delta = first_class_mean - second_class_mean
+            sigma = first_class_prob * second_class_prob * mean_delta * mean_delta
+
+            if (sigma > best_sigma):
+                best_sigma = sigma
+                best_thresh = thresh
+
+        return best_thresh
+
+    image = img
+    pix = image.load()
+    gray = ImageDraw.Draw(image)
+    for i in range(image.size[0]):
+        for j in range(image.size[1]):
+            Y = round(0.299 * pix[i, j][0] + 0.587 * pix[i, j][1] + 0.114 * pix[i, j][2])
+            gray.point((i, j), (Y, Y, Y))
+    # image.save("gray.jpg", "JPEG")
+
+    pix = image.load()
+    size = image.size
+    thresh_value = otsuThreshold(pix, size)
+    thresh = ImageDraw.Draw(image)
+    for i in range(image.size[0]):
+        for j in range(image.size[1]):
+            Y = round(0.299 * pix[i, j][0] + 0.587 * pix[i, j][1] + 0.114 * pix[i, j][2])
+            if Y > thresh_value:
+                thresh.point((i, j), (255, 255, 255))
+            else:
+                thresh.point((i, j), (0, 0, 0))
+    # image.save("thresh.jpg", "JPEG")
+
+    pix = image.load()
+    image_copy = image.copy()
+    thresh_morph = ImageDraw.Draw(image_copy)
+    kernel = [[1, 1, 1], [1, 1, 1], [1, 1, 1]]
+    kw = 3
+    kh = 3
+    for y in range(image.size[1]):
+        for x in range(image.size[0]):
+            min_value = 255
+            min_R = 255
+            min_G = 255
+            min_B = 255
+            for j in range(-kh // 2, kh // 2 + 1):
+                for i in range(-kw // 2, kw // 2 + 1):
+                    if (((x + i) >= 0) & ((y + j) >= 0) & ((x + i) < image.size[0]) & ((y + j) < image.size[1])) & (
+                            kernel[i][j] == 1):
+                        Y = round(
+                            0.299 * pix[x + i, y + j][0] + 0.587 * pix[x + i, y + j][1] + 0.114 * pix[x + i, y + j][2])
+                        if min_value > Y:
+                            min_value = Y
+                            min_R = pix[x + i, y + j][0]
+                            min_G = pix[x + i, y + j][1]
+                            min_B = pix[x + i, y + j][2]
+            thresh_morph.point((x, y), (min_R, min_G, min_B))
+    image = image_copy
+    #image.save("bin_image.jpg", "JPEG")
+    return image
 
 def find_instances(img):
     """
