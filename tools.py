@@ -1,4 +1,6 @@
 from PIL import Image, ImageDraw
+from collections import Counter
+from itertools import product
 
 
 WHITE = (255, 255, 255)
@@ -8,16 +10,92 @@ GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
 
+def get_brightness(img):
+    """
+    Find brightness level of each pixel
+    :param img: PIL.Image.Image object
+    :return: dictionary with tuple of pixels coordinates as keys and brightness level as values
+    """
+    pixels = img.load()
+    brightness = dict()
+    for i, j in product(*(range(s) for s in img.size)):
+        brightness[(i, j)] = round(sum(p * c for p, c in zip(pixels[i, j], (0.299, 0.587, 0.114))))
+
+    return brightness
+
+
+def expand_black_areas(img):
+    """
+    Expand black areas of image
+    :param img: PIL.Image.Image object
+    :return: PIL.Image.Image object
+    """
+    new_img = img.copy()
+    pixels = new_img.load()
+    size = img.size
+
+    edge_pixels = set()
+    for i, j in product(*(range(s) for s in size)):
+        if pixels[i, j] == BLACK:
+            edge_pixels.update(get_neighbours([i, j]))
+
+    edge_pixels = [(i, j) for i, j in edge_pixels if 0 <= i < size[0] and 0 <= j < size[1]]
+
+    for i, j in edge_pixels:
+        pixels[i, j] = BLACK
+
+    return new_img
+
+
+def find_brightness_threshold(brightness):
+    """
+    Find the best threshold value using the Otsu method
+    :param brightness: dictionary with tuple of pixels coordinates as keys and brightness level as values
+    :return: the best threshold value
+    """
+    histogram = Counter(val for pix, val in brightness.items())
+
+    all_intensity_sum = sum(brightness.values())
+    all_pixel_count = len(brightness)
+
+    first_class_pixel_count = 0
+    first_class_intensity_sum = 0
+
+    best_thresh = 0
+    best_sigma = 0
+
+    for thresh in sorted(histogram.keys())[:-1]:
+        first_class_pixel_count += histogram[thresh]
+        first_class_intensity_sum += thresh * histogram[thresh]
+        first_class_prob = first_class_pixel_count / all_pixel_count
+        first_class_mean = first_class_intensity_sum / first_class_pixel_count
+
+        second_class_pixel_count = all_pixel_count - first_class_pixel_count
+        second_class_intensity_sum = all_intensity_sum - first_class_intensity_sum
+        second_class_prob = 1 - first_class_prob
+        second_class_mean = second_class_intensity_sum / second_class_pixel_count
+
+        mean_delta = first_class_mean - second_class_mean
+        sigma = first_class_prob * second_class_prob * mean_delta ** 2
+
+        if sigma > best_sigma:
+            best_sigma = sigma
+            best_thresh = thresh
+
+    return best_thresh
+
+
 def get_neighbours(pixel):
     """
     Find neighbour pixels of 'pixel'
     :param pixel: (x, y) - tuple of pixel coordinates 
     :return: set of neighbours 
     """
-    x_locality = (pixel[0] - 1, pixel[0], pixel[0] + 1)
-    y_locality = (pixel[1] - 1, pixel[1], pixel[1] + 1)
-
-    neighbours = [(x, y) for x in x_locality for y in y_locality]
+    pixel = tuple(pixel)
+    neighbours = list(product(
+        (pixel[0] - 1, pixel[0], pixel[0] + 1),
+        (pixel[1] - 1, pixel[1], pixel[1] + 1)
+    ))
     neighbours.remove(pixel)
     return neighbours
 
@@ -36,9 +114,7 @@ def get_locality(pixel, area_size):
 
     try:
         area_size = tuple(iter(area_size))
-        offsets = [
-            (x, y) for x in range(area_size[0] + 1) for y in range(area_size[1] + 1)
-        ]
+        offsets = product(*(range(s + 1) for s in area_size))
     except TypeError:
         offsets = [
             (x, y) for x in range(area_size + 1) for y in range(area_size + 1 - x)

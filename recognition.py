@@ -1,5 +1,6 @@
 from PIL import Image
-from tools import BLACK, get_neighbours, get_pixels_with_color
+from tools import WHITE, BLACK, get_neighbours, get_pixels_with_color, find_brightness_threshold, get_brightness, \
+    expand_black_areas
 
 
 class Instance:
@@ -10,7 +11,8 @@ class Instance:
 
         self.start_pix = min_x, min_y
         self.pixels = [(x - min_x, y - min_y) for x, y in pixels]
-        self.size = (max_x - min_x, max_y - min_y)
+        self.size = (max_x - min_x + 1, max_y - min_y + 1)
+
 
     def classify(self):
         """
@@ -22,13 +24,22 @@ class Instance:
         pass
 
 
-def handle_image(img):
+def handle_image(image):
     """
     Make basic filtration: removing noise from image, turning colors into black and white.
-    :param img: PIL.Image.Image object
+    :param image: PIL.Image.Image object
     :return: PIL.Image.Image object
     """
-    pass
+    filtered_image = Image.new('RGB', image.size, WHITE)
+    pixels = filtered_image.load()
+
+    brightness = get_brightness(image)
+    thresh_value = find_brightness_threshold(brightness)
+    for (i, j), bright in brightness.items():
+        pixels[i, j] = WHITE if bright > thresh_value else BLACK
+
+    filtered_image = expand_black_areas(filtered_image)
+    return filtered_image
 
 
 def find_instances(img):
