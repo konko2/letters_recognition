@@ -1,5 +1,6 @@
 from PIL import Image
-from tools import WHITE, BLACK, get_neighbours, get_pixels_with_color, search_threshold_of_brightness, get_brightness, dilation
+from tools import WHITE, BLACK, get_neighbours, get_pixels_with_color, find_brightness_threshold, get_brightness, \
+    expand_black_areas
 
 
 class Instance:
@@ -10,7 +11,8 @@ class Instance:
 
         self.start_pix = min_x, min_y
         self.pixels = [(x - min_x, y - min_y) for x, y in pixels]
-        self.size = (max_x - min_x, max_y - min_y)
+        self.size = (max_x - min_x + 1, max_y - min_y + 1)
+
 
     def classify(self):
         """
@@ -28,25 +30,17 @@ def handle_image(image):
     :param image: PIL.Image.Image object
     :return: PIL.Image.Image object
     """
-    filtered_image = image.copy()
-    pix = filtered_image.load()
-    britghtness = get_brightness(pix, filtered_image.size)
-    for i, j in britghtness.keys():
-        Y = britghtness[(i, j)]
-        pix[i, j] = (Y, Y, Y)
+    filtered_image = Image.new('RGB', image.size, WHITE)
+    pixels = filtered_image.load()
 
-    size = filtered_image.size
-    thresh_value = search_threshold_of_brightness(pix, size)
-    britghtness = get_brightness(pix, image.size)
-    for i, j in britghtness.keys():
-        Y = britghtness[(i, j)]
-        if Y > thresh_value:
-            pix[i, j] = WHITE
-        else:
-            pix[i, j] = BLACK
+    brightness = get_brightness(image)
+    thresh_value = find_brightness_threshold(brightness)
+    for (i, j), bright in brightness.items():
+        pixels[i, j] = WHITE if bright > thresh_value else BLACK
 
-    filtered_image = dilation(image)
+    filtered_image = expand_black_areas(filtered_image)
     return filtered_image
+
 
 def find_instances(img):
     """
