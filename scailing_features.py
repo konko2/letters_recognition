@@ -2,6 +2,74 @@ from PIL import ImageDraw
 from tools import get_ellipse_pixels, get_A_slopping_lines_pixels, get_locality, WHITE, BLACK, RED, GREEN
 
 
+def has_hook_from_J(instance, *, _show_area=False):
+    """
+    True if instance image has a hook from J
+    :param instance: recognition.Instance object
+    :param _show_area: if True shows area of feature for instance
+    :return: True or False
+    """
+    size = instance.size
+    instance_pixels = set(instance.pixels)
+
+    eps = min(size) // 4
+
+    verifying_pixels = {(int(0.25 * size[0]), j) for j in range(int(0.75 * size[1]), size[1])} |\
+                       {(i, size[1]) for i in range(int(0.25 * size[0]), int(0.5 * size[0]))}
+
+    if _show_area:
+        _show_feature_area(instance, verifying_pixels, eps)
+
+    for pixel in verifying_pixels:
+        if instance_pixels.isdisjoint(get_locality(pixel, eps)):
+            return False
+    return True
+
+
+def has_upper_horizont_line(instance, *, _show_area=False):
+    """
+    True if instance image has a upper horizontal line.
+    :param instance: recognition.Instance object
+    :param _show_area: if True shows area of feature for instance
+    :return: True or False
+    """
+    size = instance.size
+    verifying_pixels = {(i, 0) for i in range(size[0] + 1)}
+    instance_pixels = set(instance.pixels)
+
+    eps = min(size) // 6
+
+    if _show_area:
+        _show_feature_area(instance, verifying_pixels, eps)
+
+    for pixel in verifying_pixels:
+        if instance_pixels.isdisjoint(get_locality(pixel, eps)):
+            return False
+    return True
+
+
+def has_bottom_horizont_line(instance, *, _show_area=False):
+    """
+    True if instance image has a bottom horizontal line.
+    :param instance: recognition.Instance object
+    :param _show_area: if True shows area of feature for instance
+    :return: True or False
+    """
+    size = instance.size
+    verifying_pixels = {(i, size[1]) for i in range(size[0] + 1)}
+    instance_pixels = set(instance.pixels)
+
+    eps = min(size) // 6
+
+    if _show_area:
+        _show_feature_area(instance, verifying_pixels, eps)
+
+    for pixel in verifying_pixels:
+        if instance_pixels.isdisjoint(get_locality(pixel, eps)):
+            return False
+    return True
+
+
 def has_A_slopping_lines(instance, *, _show_area=False):
     """
     True if instance image has A slopping lines
