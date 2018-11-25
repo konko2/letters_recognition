@@ -177,19 +177,3 @@ def get_A_slopping_lines_pixels(x_max, y_max):
     )
 
     return get_pixels_with_color(_img, BLACK)
-
-
-def get_pixels_hool_from_J(x_max, y_max):
-    _img = Image.new('RGB', (x_max, y_max), WHITE)
-    _draw = ImageDraw.Draw(_img)
-
-    _draw.line(
-        (0.25 * x_max, 0.75 * y_max, 0.25 * x_max, y_max),
-        fill=BLACK
-    )
-    _draw.line(
-        (0.25 * x_max, y_max - 1, 0.5 * x_max, y_max - 1),
-        fill=BLACK
-    )
-
-    return  get_pixels_with_color(_img, BLACK)

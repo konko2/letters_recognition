@@ -1,8 +1,8 @@
 from PIL import ImageDraw
-from tools import get_ellipse_pixels, get_A_slopping_lines_pixels, get_locality, get_pixels_hool_from_J, WHITE, BLACK, RED, GREEN
+from tools import get_ellipse_pixels, get_A_slopping_lines_pixels, get_locality, WHITE, BLACK, RED, GREEN
 
 
-def _has_hool_from_J(instance, *, _show_area=False):
+def has_hook_from_J(instance, *, _show_area=False):
     """
     True if instance image has a hook from J
     :param instance: recognition.Instance object
@@ -10,12 +10,12 @@ def _has_hool_from_J(instance, *, _show_area=False):
     :return: True or False
     """
     size = instance.size
-    lines = get_pixels_hool_from_J(size[0], size[1])
     instance_pixels = set(instance.pixels)
 
     eps = min(size) // 4
 
-    verifying_pixels = {p for p in lines}
+    verifying_pixels = {(int(0.25 * size[0]), j) for j in range(int(0.75 * size[1]), size[1])} |\
+                       {(i, size[1]) for i in range(int(0.25 * size[0]), int(0.5 * size[0]))}
 
     if _show_area:
         _show_feature_area(instance, verifying_pixels, eps)
@@ -26,8 +26,7 @@ def _has_hool_from_J(instance, *, _show_area=False):
     return True
 
 
-
-def _has_upper_horizont_line(instance, *, _show_area=False):
+def has_upper_horizont_line(instance, *, _show_area=False):
     """
     True if instance image has a upper horizontal line.
     :param instance: recognition.Instance object
@@ -38,7 +37,7 @@ def _has_upper_horizont_line(instance, *, _show_area=False):
     verifying_pixels = {(i, 0) for i in range(size[0] + 1)}
     instance_pixels = set(instance.pixels)
 
-    eps = (size[0] // 15, size[1] // 7)
+    eps = min(size) // 6
 
     if _show_area:
         _show_feature_area(instance, verifying_pixels, eps)
@@ -49,7 +48,7 @@ def _has_upper_horizont_line(instance, *, _show_area=False):
     return True
 
 
-def _has_bottom_horizont_line(instance, *, _show_area=False):
+def has_bottom_horizont_line(instance, *, _show_area=False):
     """
     True if instance image has a bottom horizontal line.
     :param instance: recognition.Instance object
@@ -60,7 +59,7 @@ def _has_bottom_horizont_line(instance, *, _show_area=False):
     verifying_pixels = {(i, size[1]) for i in range(size[0] + 1)}
     instance_pixels = set(instance.pixels)
 
-    eps = (size[0] // 15, size[1] // 7)
+    eps = min(size) // 6
 
     if _show_area:
         _show_feature_area(instance, verifying_pixels, eps)
