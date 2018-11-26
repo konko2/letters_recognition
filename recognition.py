@@ -1,6 +1,7 @@
 from PIL import Image
 from tools import WHITE, BLACK, get_neighbours, get_pixels_with_color, find_brightness_threshold, get_brightness, \
     expand_black_areas
+from features import find_features, LETTERS_DETERMINATION
 
 
 class Instance:
@@ -13,15 +14,20 @@ class Instance:
         self.pixels = [(x - min_x, y - min_y) for x, y in pixels]
         self.size = (max_x - min_x + 1, max_y - min_y + 1)
 
-
     def classify(self):
         """
         If instance is similar to one of defined letters, makes an attribute 'letter', which is string representation 
-        of that letter. Else attribute 'letter' take a value None
+        of that letter. Else attribute 'letter' takes a value None
         :param self: Instance object
         :return: None
         """
-        pass
+        instance_features = find_features(self)
+
+        for letter, letter_features in LETTERS_DETERMINATION.items():
+            if set(letter_features.items()).issubset(instance_features.items()):
+                self.letter = letter
+                return
+        self.letter = None
 
 
 def handle_image(image):
