@@ -1,4 +1,4 @@
-from PIL import ImageDraw
+from PIL import Image
 from tools import get_ellipse_pixels, get_A_slopping_lines_pixels, get_locality, WHITE, BLACK, RED, GREEN
 
 
@@ -313,7 +313,6 @@ def has_4_quarter_horizont_line(instance, *, _show_area=False):
     return _has_quarter_horizont_line(instance, 4, _show_area=_show_area)
 
 
-# TODO
 def has_C_circle(instance, *, _show_area=False):
     """
     True if instance image has C circularity
@@ -323,7 +322,16 @@ def has_C_circle(instance, *, _show_area=False):
     """
     size = instance.size
     ellipse = get_ellipse_pixels(0, 0, 20 * size[0] // 19, size[1])
-    verifying_pixels = {p for p in ellipse if p[0] <= size[0]}
+    verifying_pixels = {p for p in ellipse if p[0] < size[0]}
+
+    middle_pix = (size[0] // 2, size[1] // 2)
+    bound = size[1] // 12
+    optional_tail = {p for p in verifying_pixels if (
+        middle_pix[0] < p[0] and
+        bound <= p[1] < middle_pix[1]
+    )}
+    verifying_pixels -= optional_tail
+
     instance_pixels = set(instance.pixels)
 
     eps = min(size) // 7
@@ -481,7 +489,7 @@ def _show_feature_area(instance, verifying_pixels, eps):
     :return: None
     """
     size = instance.size
-    new_img = ImageDraw.Image.new('RGB', size, WHITE)
+    new_img = Image.new('RGB', size, WHITE)
 
     for v_pixel in verifying_pixels:
         for pixel in get_locality(v_pixel, eps):
