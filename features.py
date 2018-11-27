@@ -88,7 +88,6 @@ LETTERS_DETERMINATION = {
         'C_circle': False,
         'D_belly': False,
         'hook_from_J': False
-
     },
     'G': {
         'C_circle': True,
@@ -166,10 +165,11 @@ def has_hook_from_J(instance, *, _show_area=False):
     size = instance.size
     instance_pixels = set(instance.pixels)
 
-    eps = min(size) // 4
+    first_line = {(int(0.25 * size[0]), j) for j in range(int(0.75 * size[1]), size[1])}
+    second_line = {(i, size[1]) for i in range(int(0.25 * size[0]), int(0.5 * size[0]))}
+    verifying_pixels = first_line | second_line
 
-    verifying_pixels = {(int(0.25 * size[0]), j) for j in range(int(0.75 * size[1]), size[1])} |\
-                       {(i, size[1]) for i in range(int(0.25 * size[0]), int(0.5 * size[0]))}
+    eps = min(size) // 4
 
     if _show_area:
         _show_feature_area(instance, verifying_pixels, eps)
@@ -404,15 +404,69 @@ def has_D_belly(instance, *, _show_area=False):
 
 
 def has_left_vertical_line(instance, *, _show_area=False):
-    pass
+    """
+    True if instance image has a left vertical line.
+    :param instance: recognition.Instance object
+    :param _show_area: if True shows area of feature for instance
+    :return: True or False
+    """
+    size = instance.size
+    verifying_pixels = {(0, i) for i in range(size[1] + 1)}
+    instance_pixels = set(instance.pixels)
+
+    eps = min(size) // 6
+
+    if _show_area:
+        _show_feature_area(instance, verifying_pixels, eps)
+
+    for pixel in verifying_pixels:
+        if instance_pixels.isdisjoint(get_locality(pixel, eps)):
+            return False
+    return True
 
 
 def has_middle_vertical_line(instance, *, _show_area=False):
-    pass
+    """
+    True if instance image has a middle vertical line.
+    :param instance: recognition.Instance object
+    :param _show_area: if True shows area of feature for instance
+    :return: True or False
+    """
+    size = instance.size
+    verifying_pixels = {(size[1] // 2, i) for i in range(size[1] + 1)}
+    instance_pixels = set(instance.pixels)
+
+    eps = min(size) // 6
+
+    if _show_area:
+        _show_feature_area(instance, verifying_pixels, eps)
+
+    for pixel in verifying_pixels:
+        if instance_pixels.isdisjoint(get_locality(pixel, eps)):
+            return False
+    return True
 
 
 def has_right_vertical_line(instance, *, _show_area=False):
-    pass
+    """
+    True if instance image has a right vertical line.
+    :param instance: recognition.Instance object
+    :param _show_area: if True shows area of feature for instance
+    :return: True or False
+    """
+    size = instance.size
+    verifying_pixels = {(size[0], i) for i in range(size[1] + 1)}
+    instance_pixels = set(instance.pixels)
+
+    eps = min(size) // 6
+
+    if _show_area:
+        _show_feature_area(instance, verifying_pixels, eps)
+
+    for pixel in verifying_pixels:
+        if instance_pixels.isdisjoint(get_locality(pixel, eps)):
+            return False
+    return True
 
 
 def _show_feature_area(instance, verifying_pixels, eps):
@@ -446,7 +500,12 @@ def _show_feature_area(instance, verifying_pixels, eps):
 
 
 def find_features(instance):
+    """
+    Scales all features for given instance
+    :param instance: recognition.Instance object
+    :return: Dict with feature names as keys and boolean answers as values
+    """
     feature_funcs = {
         key: value for key, value in globals().items() if key.startswith('has_')
     }
-    return {func_name[4:]: func(instance) for func_name, func in feature_funcs}
+    return {func_name[4:]: func(instance) for func_name, func in feature_funcs.items()}
