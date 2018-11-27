@@ -2,6 +2,160 @@ from PIL import ImageDraw
 from tools import get_ellipse_pixels, get_A_slopping_lines_pixels, get_locality, WHITE, BLACK, RED, GREEN
 
 
+LETTERS_DETERMINATION = {
+    'A': {
+        'A_slopping_lines': True,
+        '2_quarter_horizont_line': True,
+        '3_quarter_horizont_line': True,
+        'left_vertical_line': False,
+        'middle_vertical_line': False,
+        'right_vertical_line': False,
+        'upper_horizont_line': False,
+        'bottom_horizont_line': False,
+        'B_circles': False,
+        'C_circle': False,
+        'D_belly': False,
+        'hook_from_J': False
+    },
+    'B': {
+        'B_circles': True,
+        'left_vertical_line': True,
+        'middle_vertical_line': False,
+        'right_vertical_line': False,
+        'upper_horizont_line': False,
+        'bottom_horizont_line': False,
+        'A_slopping_lines': False,
+        'C_circle': False,
+        'D_belly': False,
+        'hook_from_J': False
+    },
+    'C': {
+        'C_circle': True,
+        '1_quarter_horizont_line': False,
+        '2_quarter_horizont_line': False,
+        '3_quarter_horizont_line': False,
+        '4_quarter_horizont_line': False,
+        'left_vertical_line': False,
+        'middle_vertical_line': False,
+        'right_vertical_line': False,
+        'upper_horizont_line': False,
+        'bottom_horizont_line': False,
+        'A_slopping_lines': False,
+        'B_circles': False,
+        'D_belly': False,
+        'hook_from_J': False
+    },
+    'D': {
+        'D_belly': True,
+        'left_vertical_line': True,
+        '1_quarter_horizont_line': False,
+        '2_quarter_horizont_line': False,
+        '3_quarter_horizont_line': False,
+        '4_quarter_horizont_line': False,
+        'middle_vertical_line': False,
+        'right_vertical_line': False,
+        'upper_horizont_line': False,
+        'bottom_horizont_line': False,
+        'A_slopping_lines': False,
+        'B_circles': False,
+        'C_circle': False,
+        'hook_from_J': False
+    },
+    'E': {
+        'left_vertical_line': True,
+        '1_quarter_horizont_line': True,
+        '2_quarter_horizont_line': True,
+        'upper_horizont_line': True,
+        'bottom_horizont_line': True,
+        'middle_vertical_line': False,
+        'right_vertical_line': False,
+        'A_slopping_lines': False,
+        'B_circles': False,
+        'C_circle': False,
+        'D_belly': False,
+        'hook_from_J': False
+    },
+    'F': {
+        'left_vertical_line': True,
+        '1_quarter_horizont_line': True,
+        '2_quarter_horizont_line': True,
+        'upper_horizont_line': True,
+        'middle_vertical_line': False,
+        'right_vertical_line': False,
+        'bottom_horizont_line': False,
+        'A_slopping_lines': False,
+        'B_circles': False,
+        'C_circle': False,
+        'D_belly': False,
+        'hook_from_J': False
+
+    },
+    'G': {
+        'C_circle': True,
+        '3_quarter_horizont_line': True,
+        '1_quarter_horizont_line': False,
+        '2_quarter_horizont_line': False,
+        'left_vertical_line': False,
+        'middle_vertical_line': False,
+        'right_vertical_line': False,
+        'upper_horizont_line': False,
+        'bottom_horizont_line': False,
+        'A_slopping_lines': False,
+        'B_circles': False,
+        'D_belly': False,
+        'hook_from_J': False
+    },
+    'H': {
+        'left_vertical_line': True,
+        'right_vertical_line': True,
+        '1_quarter_horizont_line': True,
+        '2_quarter_horizont_line': True,
+        '3_quarter_horizont_line': True,
+        '4_quarter_horizont_line': True,
+        'middle_vertical_line': False,
+        'upper_horizont_line': False,
+        'bottom_horizont_line': False,
+        'A_slopping_lines': False,
+        'B_circles': False,
+        'C_circle': False,
+        'D_belly': False,
+        'hook_from_J': False
+    },
+    'I': {
+        'middle_vertical_line': True,
+        'upper_horizont_line': True,
+        'bottom_horizont_line': True,
+        '1_quarter_horizont_line': False,
+        '2_quarter_horizont_line': False,
+        '3_quarter_horizont_line': False,
+        '4_quarter_horizont_line': False,
+        'left_vertical_line': False,
+        'right_vertical_line': False,
+        'A_slopping_lines': False,
+        'B_circles': False,
+        'C_circle': False,
+        'D_belly': False,
+        'hook_from_J': False
+    },
+    'J': {
+        'middle_vertical_line': True,
+        'upper_horizont_line': True,
+        'hook_from_J': True,
+        '1_quarter_horizont_line': False,
+        '2_quarter_horizont_line': False,
+        '3_quarter_horizont_line': False,
+        '4_quarter_horizont_line': False,
+        'left_vertical_line': False,
+        'right_vertical_line': False,
+        'bottom_horizont_line': False,
+        'A_slopping_lines': False,
+        'B_circles': False,
+        'C_circle': False,
+        'D_belly': False
+    }
+}
+
+
 def has_hook_from_J(instance, *, _show_area=False):
     """
     True if instance image has a hook from J
@@ -159,6 +313,7 @@ def has_4_quarter_horizont_line(instance, *, _show_area=False):
     return _has_quarter_horizont_line(instance, 4, _show_area=_show_area)
 
 
+# TODO
 def has_C_circle(instance, *, _show_area=False):
     """
     True if instance image has C circularity
@@ -248,6 +403,18 @@ def has_D_belly(instance, *, _show_area=False):
     return True
 
 
+def has_left_vertical_line(instance, *, _show_area=False):
+    pass
+
+
+def has_middle_vertical_line(instance, *, _show_area=False):
+    pass
+
+
+def has_right_vertical_line(instance, *, _show_area=False):
+    pass
+
+
 def _show_feature_area(instance, verifying_pixels, eps):
     """
     Shows feature area. Red pixels are verifying pixels.
@@ -276,3 +443,10 @@ def _show_feature_area(instance, verifying_pixels, eps):
             new_img.putpixel(pixel, GREEN)
 
     new_img.show()
+
+
+def find_features(instance):
+    feature_funcs = {
+        key: value for key, value in globals().items() if key.startswith('has_')
+    }
+    return {func_name[4:]: func(instance) for func_name, func in feature_funcs}
