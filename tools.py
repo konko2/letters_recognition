@@ -1,6 +1,8 @@
-from PIL import Image, ImageDraw
+import os
 from collections import Counter
 from itertools import product
+
+from PIL import Image, ImageDraw
 
 
 WHITE = (255, 255, 255)
@@ -8,6 +10,7 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
+PINK = (255, 0, 255)
 
 
 def get_brightness(img):
@@ -177,3 +180,8 @@ def get_A_slopping_lines_pixels(x_max, y_max):
     )
 
     return get_pixels_with_color(_img, BLACK)
+
+
+def get_package_dir_path():
+    filename_start_index = __file__.rfind(os.sep)
+    return __file__[:filename_start_index]
