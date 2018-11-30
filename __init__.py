@@ -1,1 +1,1 @@
-from recognition import find_letters
+from .recognition import find_letters
