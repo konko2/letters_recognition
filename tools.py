@@ -1,6 +1,8 @@
-from PIL import Image, ImageDraw
+import os
 from collections import Counter
 from itertools import product
+
+from PIL import Image, ImageDraw
 
 
 WHITE = (255, 255, 255)
@@ -178,3 +180,8 @@ def get_A_slopping_lines_pixels(x_max, y_max):
     )
 
     return get_pixels_with_color(_img, BLACK)
+
+
+def get_package_dir_path():
+    filename_start_index = __file__.rfind(os.sep)
+    return __file__[:filename_start_index]

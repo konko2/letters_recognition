@@ -1,7 +1,10 @@
+import os
+
 from PIL import Image, ImageDraw, ImageFont
-from .tools import WHITE, BLACK, PINK, get_neighbours, get_pixels_with_color, find_brightness_threshold, \
-    get_brightness, expand_black_areas
+
 from .features import find_features, LETTERS_DETERMINATION
+from .tools import WHITE, BLACK, PINK, get_neighbours, get_pixels_with_color, find_brightness_threshold, \
+    get_brightness, expand_black_areas, get_package_dir_path
 
 
 class Instance:
@@ -82,7 +85,9 @@ def create_output_image(img, instances):
     """
     output_img = img.copy()
     draw = ImageDraw.Draw(output_img)
-    font = ImageFont.truetype('OpenSans-Regular.ttf', size=min(img.size) // 15)
+
+    font_path = os.sep.join([get_package_dir_path(), 'OpenSans-Regular.ttf'])
+    font = ImageFont.truetype(font_path, size=min(img.size) // 15)
 
     for instance in instances:
         if instance.letter:

@@ -15,7 +15,6 @@
  pip install pillow
 ```
 Then, in Python, only import `find_letters` function from package. 
-
 Example:
 ```
 from letters_recognition import find_letters
