@@ -180,3 +180,9 @@ def get_A_slopping_lines_pixels(x_min, y_min, x_max, y_max):
 def get_package_dir_path():
     filename_start_index = __file__.rfind(os.sep)
     return __file__[:filename_start_index]
+
+
+def change_size(image, width):
+    r = float(width) / image.size[0]
+    dim = (width, int(image.size[1] * r))
+    return image.resize(dim)
