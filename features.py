@@ -6,8 +6,7 @@ from .tools import get_ellipse_pixels, get_A_slopping_lines_pixels, get_locality
 LETTERS_DETERMINATION = {
     'A': {
         'A_slopping_lines': True,
-        '2_quarter_horizont_line': True,
-        '3_quarter_horizont_line': True,
+        '2_part_horizont_line': True,
         'left_vertical_line': False,
         'middle_vertical_line': False,
         'right_vertical_line': False,
@@ -21,42 +20,38 @@ LETTERS_DETERMINATION = {
     'B': {
         'B_circles': True,
         'left_vertical_line': True,
-        'middle_vertical_line': False
+        'middle_vertical_line': False,
     },
     'C': {
         'C_circle': True,
-        '2_quarter_horizont_line': False,
-        '3_quarter_horizont_line': False,
-        '4_quarter_horizont_line': False,
+        '2_part_horizont_line': False,
+        '3_part_horizont_line': False,
         'middle_vertical_line': False,
         'right_vertical_line': False,
         'A_slopping_lines': False,
-        'B_circles': False,
-        'D_belly': False
+        'B_circles': False
     },
     'D': {
         'D_belly': True,
         'left_vertical_line': True,
-        '2_quarter_horizont_line': False,
-        '3_quarter_horizont_line': False,
+        '1_part_horizont_line': False,
+        '2_part_horizont_line': False,
         'middle_vertical_line': False,
         'B_circles': False
     },
     'E': {
         'left_vertical_line': True,
-        '1_quarter_horizont_line': True,
-        '2_quarter_horizont_line': True,
+        '1_part_horizont_line': True,
         'upper_horizont_line': True,
         'bottom_horizont_line': True,
         'middle_vertical_line': False,
         'right_vertical_line': False,
         'A_slopping_lines': False,
-        'B_circles': False
+        'B_circles': False,
     },
     'F': {
         'left_vertical_line': True,
-        '1_quarter_horizont_line': True,
-        '2_quarter_horizont_line': True,
+        '1_part_horizont_line': True,
         'upper_horizont_line': True,
         'middle_vertical_line': False,
         'right_vertical_line': False,
@@ -69,21 +64,18 @@ LETTERS_DETERMINATION = {
     },
     'G': {
         'C_circle': True,
-        '4_quarter_horizont_line': True,
-        '2_quarter_horizont_line': False,
+        '3_part_horizont_line': True,
         'middle_vertical_line': False,
         'right_vertical_line': False,
-        'A_slopping_lines': False,
         'B_circles': False,
         'D_belly': False
     },
     'H': {
         'left_vertical_line': True,
         'right_vertical_line': True,
-        '1_quarter_horizont_line': True,
-        '2_quarter_horizont_line': True,
-        '3_quarter_horizont_line': True,
-        '4_quarter_horizont_line': True,
+        '1_part_horizont_line': True,
+        '2_part_horizont_line': True,
+        '3_part_horizont_line': True,
         'middle_vertical_line': False,
         'upper_horizont_line': False,
         'bottom_horizont_line': False,
@@ -97,8 +89,6 @@ LETTERS_DETERMINATION = {
         'middle_vertical_line': True,
         'upper_horizont_line': True,
         'bottom_horizont_line': True,
-        '1_quarter_horizont_line': False,
-        '4_quarter_horizont_line': False,
         'left_vertical_line': False,
         'right_vertical_line': False,
         'A_slopping_lines': False,
@@ -110,7 +100,7 @@ LETTERS_DETERMINATION = {
     'J': {
         'middle_vertical_line': True,
         'hook_from_J': True,
-        '1_quarter_horizont_line': False,
+        '1_part_horizont_line': False,
         'left_vertical_line': False,
         'A_slopping_lines': False,
         'B_circles': False,
@@ -194,7 +184,7 @@ def has_A_slopping_lines(instance, *, _show_area=False):
     return _scale_feature_with_verifying_pixels(instance, verifying_pixels, eps, _show_area=_show_area)
 
 
-def _has_quarter_horizont_line(instance, quarter_num, *, _show_area=False):
+def _has_part_horizont_line(instance, part_begin_end, *, _show_area=False):
     """
     True if instance image has a corresponding quarter of middle horizontal line,
     where parameter quarter is a sequential number of quarter.
@@ -204,56 +194,50 @@ def _has_quarter_horizont_line(instance, quarter_num, *, _show_area=False):
     :return: True or False
     """
     size = instance.size
-
-    length = size[0] // 4
     middle_height = size[1] // 2
     verifying_pixels = {
-        (x, middle_height) for x in range(length * (quarter_num - 1), length * quarter_num)
+        (x, middle_height) for x in range(int(part_begin_end[0]*size[0]), int(part_begin_end[1]*size[0]) + 1)
     }
+    edges = size[0] // 6, size[0] * 5 // 6
+    verifying_pixels = {p for p in verifying_pixels if edges[0] < p[0] < edges[1]}
+    instance_pixels = set(instance.pixels)
 
-    eps = (size[0] // 8, size[1] // 6)
+    eps = (instance.size[0] // 18, instance.size[1] // 5)
 
     return _scale_feature_with_verifying_pixels(instance, verifying_pixels, eps, _show_area=_show_area)
 
 
-def has_1_quarter_horizont_line(instance, *, _show_area=False):
+def has_1_part_horizont_line(instance, *, _show_area=False):
+
     """
-    True if instance image has a first quarter of middle horizontal line.
+    True if instance image has the first part of middle horizontal line.
     :param instance: recognition.Instance object
     :param _show_area: if True shows area of feature for instance
     :return: True or False
     """
-    return _has_quarter_horizont_line(instance, 1, _show_area=_show_area)
+    return _has_part_horizont_line(instance, (0, 2/5), _show_area=_show_area)
 
 
-def has_2_quarter_horizont_line(instance, *, _show_area=False):
+def has_2_part_horizont_line(instance, *, _show_area=False):
+
     """
-    True if instance image has a second quarter of middle horizontal line.
+    True if instance image has the second part of middle horizontal line.
     :param instance: recognition.Instance object
     :param _show_area: if True shows area of feature for instance
     :return: True or False
     """
-    return _has_quarter_horizont_line(instance, 2, _show_area=_show_area)
+    return _has_part_horizont_line(instance, (2/5, 3/5), _show_area=_show_area)
 
 
-def has_3_quarter_horizont_line(instance, *, _show_area=False):
+def has_3_part_horizont_line(instance, *, _show_area=False):
+
     """
-    True if instance image has a third quarter of middle horizontal line.
+    True if instance image has the third part of middle horizontal line.
     :param instance: recognition.Instance object
     :param _show_area: if True shows area of feature for instance
     :return: True or False
     """
-    return _has_quarter_horizont_line(instance, 3, _show_area=_show_area)
-
-
-def has_4_quarter_horizont_line(instance, *, _show_area=False):
-    """
-    True if instance image has a fourth quarter of middle horizontal line.
-    :param instance: recognition.Instance object
-    :param _show_area: if True shows area of feature for instance
-    :return: True or False
-    """
-    return _has_quarter_horizont_line(instance, 4, _show_area=_show_area)
+    return _has_part_horizont_line(instance, (3/5, 1), _show_area=_show_area)
 
 
 def has_C_circle(instance, *, _show_area=False):
