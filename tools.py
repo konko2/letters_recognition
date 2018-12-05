@@ -166,18 +166,13 @@ def get_ellipse_pixels(x_min, y_min, x_max, y_max):
     return get_pixels_with_color(_img, BLACK)
 
 
-def get_A_slopping_lines_pixels(x_max, y_max):
+def get_A_slopping_lines_pixels(x_min, y_min, x_max, y_max):
     _img = Image.new('RGB', (x_max, y_max), WHITE)
     _draw = ImageDraw.Draw(_img)
 
-    _draw.line(
-        (0, y_max, 0.5*x_max, 0),
-        fill=BLACK
-    )
-    _draw.line(
-        (x_max, y_max, 0.5 * x_max, 0),
-        fill=BLACK
-    )
+    x_mid = (x_max + x_min) // 2
+    _draw.line((x_min, y_max, x_mid, y_min), fill=BLACK)
+    _draw.line((x_max, y_max, x_mid, y_min), fill=BLACK)
 
     return get_pixels_with_color(_img, BLACK)
 

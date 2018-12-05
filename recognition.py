@@ -24,8 +24,12 @@ class Instance:
         :param self: Instance object
         :return: None
         """
-        instance_features = find_features(self)
+        size = self.size
+        if size[0] < 10 or not 0.3 < size[1]/size[0] < 5:
+            self.letter = None
+            return
 
+        instance_features = find_features(self)
         for letter, letter_features in LETTERS_DETERMINATION.items():
             if set(letter_features.items()).issubset(instance_features.items()):
                 self.letter = letter
@@ -106,9 +110,6 @@ def find_letters(image_path):
     filtered_img = handle_image(img)
     instances = find_instances(filtered_img)
     for instance in instances:
-        if instance.size[0] > 10 and 0.3 < instance.size[1] / instance.size[0] < 5:
             instance.classify()
-        else:
-            instance.letter = None
     result_image = create_output_image(img, instances)
     return result_image
