@@ -4,7 +4,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from .features import find_features, LETTERS_DETERMINATION
 from .tools import WHITE, BLACK, PINK, get_neighbours, get_pixels_with_color, find_brightness_threshold, \
-    get_brightness, expand_black_areas, get_package_dir_path, change_size
+    get_brightness, expand_black_areas, get_package_dir_path
 
 
 class Instance:
@@ -17,18 +17,15 @@ class Instance:
         self.pixels = [(x - min_x, y - min_y) for x, y in pixels]
         self.size = (max_x - min_x + 1, max_y - min_y + 1)
 
-    def change_instance(self, width):
-        _img = Image.new('RGB', self.size, WHITE)
-        _draw = ImageDraw.Draw(_img)
-        for coordinat_pix in self.pixels:
-            _draw.point((coordinat_pix[0], coordinat_pix[1]), BLACK)
+    def get_resized(self, ratio):
+        resized_img = Image.new('RGB', self.size, WHITE)
+        for pixel in self.pixels:
+            resized_img.putpixel(pixel, BLACK)
 
-        _img = change_size(_img, width)
-
-        black_pixels = get_pixels_with_color(_img, BLACK)
-
-        resize_instance = Instance(black_pixels)
-        return resize_instance
+        resized_img = resized_img.resize([int(s * ratio) for s in self.size])
+        brightness = get_brightness(resized_img)
+        resized_pixels = {pixel for pixel, bright in brightness.items() if bright < 130}
+        return Instance(resized_pixels)
 
     def classify(self):
         """
@@ -38,14 +35,12 @@ class Instance:
         :return: None
         """
         size = self.size
-        if size[0] < 10 or not 0.3 < size[1]/size[0] < 5:
+        if min(size) < 10 or not 0.3 < size[1]/size[0] < 5:
             self.letter = None
             return
-        elif self.size[0] > 50:
-            resize_instance = self.change_instance(50)
-            instance_features = find_features(resize_instance)
-        else:
-            instance_features = find_features(self)
+
+        ratio = 70 / max(size)
+        instance_features = find_features(self.get_resized(ratio)) if ratio < 1 else find_features(self)
 
         for letter, letter_features in LETTERS_DETERMINATION.items():
             if set(letter_features.items()).issubset(instance_features.items()):
