@@ -39,7 +39,7 @@ class Instance:
             self.letter = None
             return
 
-        ratio = 70 / max(size)
+        ratio = 100 / max(size)
         instance_features = find_features(self.get_resized(ratio)) if ratio < 1 else find_features(self)
 
         for letter, letter_features in LETTERS_DETERMINATION.items():

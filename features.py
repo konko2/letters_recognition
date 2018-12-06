@@ -320,7 +320,7 @@ def has_C_circle(instance, *, _show_area=False):
     return _scale_feature_with_verifying_pixels(instance, verifying_pixels, eps, _show_area=_show_area)
 
 
-def has_D_belly(instance, *, _show_area=False):
+def has_D_belly(instance, *, _show_area=True):
     """
     True if instance image has D belly
     :param instance: recognition.Instance object
@@ -328,7 +328,7 @@ def has_D_belly(instance, *, _show_area=False):
     :return: True or False
     """
     size = instance.size
-    bbox = (size[0] // 10, size[1] // 10, size[0] * 9 // 10, size[1] * 9 // 10)
+    bbox = (size[0] // 15, size[1] // 15, size[0] * 14 // 15, size[1] * 14 // 15)
     bbox_size = (bbox[2] - bbox[0], bbox[3] - bbox[1])
 
     ellipse = get_ellipse_pixels(bbox[0], bbox[1], bbox[0] + 2 * bbox_size[0] - 1, bbox[3])
